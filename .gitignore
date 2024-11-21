@@ -1,0 +1,11 @@
+# database
+db
+
+# docker
+docker-compose.yml
+
+# config
+internal/configs/config.yaml
+
+# makefile
+Makefile

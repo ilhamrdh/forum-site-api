@@ -1,0 +1,321 @@
+openapi: 3.0.0
+info:
+    title: Forum Site
+    description: >-
+        API for managing a forum, including authentication, post creation, and user
+        activities such as comments and likes.
+    version: 1.0.0
+servers:
+    - url: http://localhost:9000
+      description: Development server
+components:
+    securitySchemes:
+        apikeyAuth:
+            type: apiKey
+            in: header
+            name: Authorization
+    schemas:
+        SignupRequest:
+            type: object
+            required:
+                - username
+                - email
+                - password
+            properties:
+                username:
+                    type: string
+                    example: example
+                email:
+                    type: string
+                    format: email
+                    example: example@me.com
+                password:
+                    type: string
+                    format: password
+                    example: test12345
+        LoginRequest:
+            type: object
+            required:
+                - email
+                - password
+            properties:
+                email:
+                    type: string
+                    format: email
+                    example: example@me.com
+                password:
+                    type: string
+                    format: password
+                    example: test12345
+        RefreshTokenRequest:
+            type: object
+            required:
+                - token
+            properties:
+                token:
+                    type: string
+                    example: d91c7d8b2d6acc212dd7b8b8dc8aeb5f71ae
+        PostRequest:
+            type: object
+            required:
+                - post_title
+                - post_content
+            properties:
+                post_title:
+                    type: string
+                    example: Book Recommendation
+                post_content:
+                    type: string
+                    example: >
+                        Just finished an amazing book! Highly recommend it to anyone who
+                        loves thrillers.
+                post_hashtags:
+                    type: array
+                    items:
+                        type: string
+                    example:
+                        - books
+                        - reading
+                        - recommendation
+        CommentRequest:
+            type: object
+            required:
+                - comment_content
+            properties:
+                comment_content:
+                    type: string
+                    example: Good
+        LikeRequest:
+            type: object
+            required:
+                - is_liked
+            properties:
+                is_liked:
+                    type: boolean
+                    example: true
+tags:
+    - name: auth
+      description: Endpoints for user authentication and session management.
+    - name: post
+      description: Endpoints for managing forum posts.
+    - name: activity user
+      description: Endpoints for user interactions, such as commenting and liking posts.
+paths:
+    /memberships/signup:
+        post:
+            tags:
+                - auth
+            summary: Register a new user
+            description: Endpoint to register a new user account.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/SignupRequest"
+            responses:
+                "200":
+                    description: User successfully registered
+                    content:
+                        application/json:
+                            example:
+                                message: Signup successful
+    /memberships/login:
+        post:
+            tags:
+                - auth
+            summary: User login
+            description: Endpoint to authenticate a user and generate an access token.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/LoginRequest"
+            responses:
+                "200":
+                    description: Login successful
+                    content:
+                        application/json:
+                            example:
+                                token: access_token_here
+    /memberships/refresh:
+        post:
+            tags:
+                - auth
+            summary: Refresh access token
+            description: Endpoint to generate a new access token using a refresh token.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/RefreshTokenRequest"
+            security:
+                - apikeyAuth: []
+            responses:
+                "200":
+                    description: New token generated successfully
+                    content:
+                        application/json:
+                            example:
+                                token: new_access_token_here
+    /posts:
+        post:
+            tags:
+                - post
+            summary: Create a new post
+            description: Endpoint to create a new forum post.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/PostRequest"
+            security:
+                - apikeyAuth: []
+            responses:
+                "200":
+                    description: Post created successfully
+                    content:
+                        application/json:
+                            example:
+                                id: 12345
+                                message: Post created successfully
+        get:
+            tags:
+                - post
+            summary: Retrieve all posts
+            description: >-
+                Endpoint to retrieve a list of all posts in the forum, with pagination
+                support.
+            security:
+                - apikeyAuth: []
+            parameters:
+                - name: pageIndex
+                  in: query
+                  required: false
+                  schema:
+                      type: integer
+                      example: 1
+                - name: pageSize
+                  in: query
+                  required: false
+                  schema:
+                      type: integer
+                      example: 10
+            responses:
+                "200":
+                    description: List of posts
+                    content:
+                        application/json:
+                            example:
+                                data:
+                                    - id: 10
+                                      user_id: 2
+                                      username: example
+                                      post_title: Cityscape Photography
+                                      post_content: >-
+                                          Captured some incredible shots of the city skyline last
+                                          night.
+                                      post_hashtags:
+                                          - photography
+                                          - cityscape
+                                          - nightshots
+                                      is_liked: false
+                                pagination:
+                                    limit: 5,
+                                    offset: 20
+    /posts/{post_id}:
+        get:
+            tags:
+                - post
+            summary: Retrieve post by ID
+            description: Endpoint to retrieve the details of a specific post by its ID.
+            security:
+                - apikeyAuth: []
+            parameters:
+                - name: post_id
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                "200":
+                    description: Post details retrieved successfully
+                    content:
+                        application/json:
+                            example:
+                                post:
+                                    id: 5
+                                    user_id: 1
+                                    username: example
+                                    post_title: Exploring the Mountains
+                                    post_content: >-
+                                        I recently went on a mountain adventure, and it was
+                                        absolutely stunning!,
+                                    post_hashtags:
+                                        - mountains
+                                        - hiking
+                                        - adventure
+                                    is_liked: true
+                                like_count: 3
+                                comments:
+                                    - id: 1
+                                      user_id: 1
+                                      username: example
+                                      comment_content: Great post! I loved the insights you shared.
+    /posts/comment/{post_id}:
+        post:
+            tags:
+                - activity user
+            summary: Add comment to post
+            description: Endpoint to add a comment to a specific post.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/CommentRequest"
+            security:
+                - apikeyAuth: []
+            parameters:
+                - name: post_id
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                "200":
+                    description: Comment added successfully
+                    content:
+                        application/json:
+                            example:
+                                message: Comment added successfully
+    /posts/user-activity/like/{post_id}:
+        put:
+            tags:
+                - activity user
+            summary: Like or unlike a post
+            description: Endpoint to like or unlike a specific post.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/LikeRequest"
+            security:
+                - apikeyAuth: []
+            parameters:
+                - name: post_id
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                "200":
+                    description: Like status updated successfully
+                    content:
+                        application/json:
+                            example:
+                                message: Like status updated successfully
