@@ -14,7 +14,7 @@ Clone the repository and navigate to the project directory:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/forum-site-api.git
+git clone https://github.com/ilhamrdh/forum-site-api.git
 cd forum-site-api
 
 # Install dependencies
@@ -74,7 +74,7 @@ To use the API, make requests to the appropriate endpoints and handle the respon
 
 ## Documentation
 
-[Documentation](https://github.com/yourusername/forum-site-api/blob/main/docs/swagger.yml)
+[Documentation](https://github.com/ilhamrdh/forum-site-api/blob/main/docs/swagger.yml)
 
 ## Acknowledgements
 
